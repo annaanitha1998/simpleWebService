@@ -7,27 +7,35 @@ var fs = require('fs'); //require file system object
 app.get('/getUsers', function(req, res){
     fs.readFile(__dirname + "/" + "users.json", 'utf8', function(err, data){
         console.log(data);
-        res.end(data); // you can also use res.send()
+        res.set('Content-Type','text/json');
+        res.end(data);
     });
 })
 
-var user = {
+// var user = {
     
-        "user_Kathy": {
-          "name": "Kathy",
-          "email": "kathy@gmail.com",
-          "password": "Kathy@123",
-          "lastLogin": new Date().toDateString()
-        }
+//         "user_Kathy": {
+//           "name": "Kathy",
+//           "email": "kathy@gmail.com",
+//           "password": "Kathy@123",
+//           "lastLogin": new Date().toDateString()
+//         }
       
-} 
+// } 
+
+ // For parsing application/json
+ app.use(express.json());
+  
+ // For parsing application/x-www-form-urlencoded
+ app.use(express.urlencoded({ extended: true }));
 
 app.post('/addUser', function (req, res) {
     // First read existing users.
     fs.readFile( __dirname + "/" + "users.json", 'utf8', function (err, data) {
        console.log(data)
        data = data ? JSON.parse( data ) : {};
-       data["user_Kathy"] = user["user_Kathy"];
+       data["user_"+req.body.name] = req.body;
+       data["user_"+req.body.name]["lastLogin"] = new Date().toDateString();
        console.log( data );
        res.status(200);
        res.set('Content-Type','text/json');
@@ -65,7 +73,7 @@ app.get('/:id', function (req, res) {
     });
  })
 
- var newMail = 'anna3@gmail.com'
+//  var newMail = 'anna3@gmail.com'
 
  app.put('/updateUser/:name', function (req, res) {
     // First read existing users.
@@ -73,7 +81,7 @@ app.get('/:id', function (req, res) {
        data = JSON.parse( data );
        var user = data["user_" + req.params.name] 
        console.log(user)
-       user.email = newMail;
+       user.email = req.body.email;
        data["user_" + req.params.name] = user;
        res.status(200);
        res.set('Content-Type','text/json');
@@ -84,12 +92,6 @@ app.get('/:id', function (req, res) {
         });
     });
  })
-
- // For parsing application/json
- app.use(express.json());
-  
- // For parsing application/x-www-form-urlencoded
- app.use(express.urlencoded({ extended: true }));
 
  app.post('/login', (req, res) => {
     fs.readFile( __dirname + "/" + "users.json", 'utf8', function (err, data) {
